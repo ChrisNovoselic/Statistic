@@ -152,7 +152,7 @@ namespace StatisticCommon
                 {
                     indxEv = WaitAny (Constants.MAX_WATING, true);
                     if (indxEv == INDEX_WAITHANDLE_REASON.SUCCESS)
-                        base.GetRDGValues(key);
+                        base.GetRDGValues(key, true);
                     else {
                         ASUTP.Logging.Logg ().Error ($"AdminTS_TG::threadGetRDGValuesWithoutDate () - <{indxEv}>...", ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
 
@@ -169,10 +169,10 @@ namespace StatisticCommon
             if(!(date == DateTime.MinValue))
                 base.GetRDGValues(key, (DateTime)date);
             else
-                base.GetRDGValues(key);
+                base.GetRDGValues(key, true);
         }
 
-        public override void GetRDGValues(FormChangeMode.KeyDevice key)
+        public override void GetRDGValues(FormChangeMode.KeyDevice key, bool bUsingDate)
         {
             //delegateStartWait ();
             FillListKeyTECComponentDetail(key.Id);

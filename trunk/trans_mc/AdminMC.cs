@@ -20,6 +20,8 @@ namespace trans_mc
 {
     public class AdminMC : AdminModes
     {
+        public const string s_FetchWaking = "00:47:47";
+
         /// <summary>
         /// Интерфейс аргумента события
         /// </summary>
@@ -161,9 +163,12 @@ namespace trans_mc
             } else
                 ;
 
-            _dueTimerFetchWaking = bActivated == true ? (int)StatisticTrans.FileAppSettings.This ().FetchWaking ().TotalMilliseconds : System.Threading.Timeout.Infinite;
+            _dueTimerFetchWaking = bActivated == true ? (int)StatisticTrans.FileAppSettings.This ().FetchWaking (s_FetchWaking).TotalMilliseconds : System.Threading.Timeout.Infinite;
 
             _timerFetchWaking.Change (_dueTimerFetchWaking, System.Threading.Timeout.Infinite);
+
+            Logging.Logg ().Debug ($"AdminMC::activateTimerFetchWaking (Activated={bActivated}) - интервал={TimeSpan.FromMilliseconds(_dueTimerFetchWaking).ToString()}..."
+                , Logging.INDEX_MESSAGE.NOT_SET);
         }
 
         /// <summary>

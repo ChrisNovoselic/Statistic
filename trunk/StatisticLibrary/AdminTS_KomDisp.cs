@@ -422,7 +422,7 @@ namespace StatisticCommon
                 ;
 
             //Обновить значения на вкладке
-            GetRDGValues (prevKeyTECComponents);
+            GetRDGValues (prevKeyTECComponents, false);
         }
 
         private Errors saveCSVValues (FormChangeMode.KeyDevice key, object pbr_number) {

@@ -313,6 +313,10 @@ namespace Statistic
 
         private static bool AllowUserChangeShedulePeriodExportPBRValues = false;
 
+        private static bool AllowUserImportAdminValuesDefault = false;
+
+        private static bool AllowUserImportCSVPBRValues = false;
+
         private void cbAutoExport_PBRValues_CheckedChanged(object sender, EventArgs e)
         {
             bool bChecked = false;
@@ -354,8 +358,13 @@ namespace Statistic
         public PanelAdminKomDisp(ASUTP.Core.HMark markQueries)
             : base(FormChangeMode.MODE_TECCOMPONENT.GTP, markQueries, new int[] { 0, (int)TECComponent.ID.GTP })
         {
-            //??? вызывается из базового класса
-            //InitializeComponents ();
+            // 04.04.2018 KhryapinAN - необходимость полей связана с возможным в дальнейшем создания соответсвующих параметров конфигурации (для профиля группы/пользователя)
+            AllowUserImportAdminValuesDefault =
+            AllowUserImportCSVPBRValues =
+                HStatisticUsers.RoleIsKomDisp;
+
+            btnImportCSV_AdminDefaultValues.Enabled = AllowUserImportAdminValuesDefault;
+            btnImportCSV_PBRValues.Enabled = AllowUserImportCSVPBRValues;
         }
 
         public override bool Activate(bool activate)

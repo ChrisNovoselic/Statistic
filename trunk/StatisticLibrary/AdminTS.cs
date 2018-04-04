@@ -307,7 +307,7 @@ namespace StatisticCommon
             if ((active == true)
                 && (bRes == true)
                 && (IsFirstActivated == true)) //Только при 1-ой активации
-                GetRDGValues (CurrentKey);
+                GetRDGValues (CurrentKey, true);
             else
                 ;
 
@@ -340,13 +340,13 @@ namespace StatisticCommon
             {
                 ClearStates();
 
-                //m_curDate = mcldrDate.SelectionStart;
-                m_curDate = m_prevDate;
                 saving = false;
 
-                using_date = true; //???
+                using_date = true; // по окончанию запроса(получению текущих даты/времени) установить его в качестве текущего
 
-                AddState((int)StatesMachine.CurrentTime);
+                m_curDate = m_prevDate;
+
+                AddState ((int)StatesMachine.CurrentTime);
 
                 Run(@"AdminTS::Reinit ()");
             }
@@ -364,7 +364,7 @@ namespace StatisticCommon
         /// Постановка в очередь получения административных и ПБР значений
         /// </summary>
         /// <param name="indx">Индекс компонента</param>
-        public virtual void GetRDGValues (FormChangeMode.KeyDevice key) {
+        public virtual void GetRDGValues (FormChangeMode.KeyDevice key, bool bUsingDate) {
             //Запретить запись ПБР-значений
             protectSavedPPBRValues();
 
@@ -375,12 +375,13 @@ namespace StatisticCommon
 
                 CurrentKey = key;
 
-                using_date = true;
+                using_date = bUsingDate;
                 //comboBoxTecComponent.SelectedIndex = indxTECComponents;
 
-                //m_typeFields = mode;
+                ////??? почему не птребуется присваивание
+                //m_curDate = m_prevDate;
 
-                AddState((int)StatesMachine.CurrentTime);
+                AddState ((int)StatesMachine.CurrentTime);
                 if (m_markQueries.IsMarked((int)CONN_SETT_TYPE.PBR) == true)
                     AddState((int)StatesMachine.PPBRValues);
                 else ;
@@ -502,7 +503,9 @@ namespace StatisticCommon
 
                     saveResult = Errors.NoAccess;
                     saving = true;
+
                     using_date = false;
+
                     m_curDate = m_prevDate;
 
                     AddState((int)StatesMachine.ExpRDGExcelValues);
@@ -2590,9 +2593,11 @@ namespace StatisticCommon
                         ClearStates();
                         ClearValues();
 
+                        using_date = false;
+
                         //m_prevDate = date.Date;
                         m_curDate = m_prevDate;
-                        using_date = false;
+                        
 
                         //Logging.Logg().Debug("AdminTS::SaveRDGValues () - states.Clear() - ...", Logging.INDEX_MESSAGE.NOT_SET);
 
@@ -2684,9 +2689,10 @@ namespace StatisticCommon
                     ClearStates();
                     ClearValues();
 
+                    using_date = false;
+
                     m_prevDate = date.Date;
                     m_curDate = m_prevDate;
-                    using_date = false;
 
                     //AddState((int)StatesMachine.CurrentTime);
                     if (m_markQueries.IsMarked((int)CONN_SETT_TYPE.PBR) == true)

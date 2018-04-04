@@ -400,11 +400,15 @@ namespace Statistic
         /// выполнение функции, связанной с изменением значения даты/времени
         /// </summary>
         /// <param name="dt">Устанавливаемая дата</param>
-        private void setDate(DateTime dt)
+        /// /// <param name="bInitTableHourRows">Признак перестроения строк представления значений в ~ от новой даты (23, 25 ч)</param>
+        private void setDate(DateTime dt, bool bInitTableHourRows)
         {
             mcldrDate.SetDate(dt);
 
-            initTableHourRows();
+            if (bInitTableHourRows == true)
+                initTableHourRows ();
+            else
+                ;
         }
 
         /// <summary>
@@ -415,7 +419,7 @@ namespace Statistic
         public void CalendarSetDate(DateTime date)
         {
             if (IsHandleCreated/*InvokeRequired*/ == true)
-                BeginInvoke(new DelegateDateFunc(setDate), date);
+                BeginInvoke(new Action<DateTime, bool>(setDate), new object [] { date, true });
             else
                 ;
         }
@@ -487,14 +491,14 @@ namespace Statistic
                             MessageBox.Show(this, "Изменение ретроспективы недопустимо!", "Внимание", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
                         else
                             MessageBox.Show(this, "Не удалось сохранить изменения, возможно отсутствует связь с базой данных.", "Ошибка сохранения", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        mcldrDate.SetDate(m_admin.m_prevDate);
+                        setDate(m_admin.m_prevDate, false);
                     }
                     break;
                 case DialogResult.No:
                     bRequery = true;
                     break;
                 case DialogResult.Cancel:
-                    mcldrDate.SetDate(m_admin.m_prevDate);
+                    setDate(m_admin.m_prevDate, false);
                     break;
             }
 

@@ -2017,7 +2017,12 @@ namespace Statistic
                 {
                     if ((modeAdmin == FormChangeMode.MANAGER.DISP)
                         || (modeAdmin == FormChangeMode.MANAGER.ALARM))
-                        indxRolesPassword = Passwords.INDEX_ROLES.COM_DISP;
+                        indxRolesPassword =
+                            //Passwords.INDEX_ROLES.COM_DISP
+                            // 04.04.2018 KhryapinAN - для возможности НСС устанавливать значения инициатив собственных
+                            // , кроме этого требуется разрешить НСС использование вкладки "ПБР - диспетчер"
+                            HStatisticUsers.RoleIsKomDisp == true ? Passwords.INDEX_ROLES.COM_DISP : Passwords.INDEX_ROLES.NSS
+                                ;
                     else
                         if ((modeAdmin == FormChangeMode.MANAGER.NSS)
                             || (modeAdmin == FormChangeMode.MANAGER.TEPLOSET))

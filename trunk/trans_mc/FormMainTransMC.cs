@@ -27,7 +27,7 @@ namespace trans_mc
                         , { DbMCInterface.EVENT.OnPlanDataChanged.ToString(), true }
                         , { DbMCInterface.EVENT.OnModesEvent.ToString(), false }
                     }))
-                    , new System.Collections.Generic.KeyValuePair<string, string> (@"FetchWaking", @"HH:mm:ss;01:02:03")
+                    , new System.Collections.Generic.KeyValuePair<string, string> (@"FetchWaking", $"HH:mm:ss;{AdminMC.s_FetchWaking}")
                   })
         {
             InitializeComponent ();

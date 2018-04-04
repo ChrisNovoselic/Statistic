@@ -15,6 +15,13 @@ namespace StatisticTrans
     /// </summary>
     public class FileAppSettings : IFileAppSettings
     {
+        /// <summary>
+        /// Разделитель нескольких значений для некоторых параметров
+        /// </summary>
+        private const string DELIM = ";";
+
+        private const string s_OverDate = "03:04:05";
+
         private static FileAppSettings _this;
 
         private KeyValueConfigurationCollection _config;
@@ -52,7 +59,7 @@ namespace StatisticTrans
                 , new Tuple<string, string> (@"ОпросСохранениеППБР", string.Join(",", new bool[] { true, false }))
                 , new Tuple<string, string> (@"ОпросСохранениеАдминЗнач", string.Join(",", new bool[] { true, false }))
                 , new Tuple<string, string> (@"ID_TECNotUse", string.Empty)
-                , new Tuple<string, string> ("OverDate", "HH:mm:ss;03:04:05")
+                , new Tuple<string, string> ("OverDate", $"HH:mm:ss;{s_OverDate}")
             }.ToList().ForEach(elem => addRequired(elem.Item1, elem.Item2));
         }
 
@@ -82,41 +89,67 @@ namespace StatisticTrans
             }
         }
 
-        public TimeSpan OverDate(string valueDefault = "03:04:05")
+        public enum TIMESPAN_PARSE_FUNC { NATIVE, DIFFERENCE }
+
+        public TimeSpan OverDate(string valueDefault = s_OverDate)
         {
-            return parseTimeSpan ("OverDate", valueDefault);
+            return parseTimeSpan (GetValue ("OverDate").Split (new string [] { DELIM }, StringSplitOptions.RemoveEmptyEntries), DateTime.Now, TIMESPAN_PARSE_FUNC.NATIVE, valueDefault);
         }
 
-        public TimeSpan FetchWaking (string valueDefault = "01:02:03")
+        public TimeSpan FetchWaking (string valueDefault)
         {
-            return parseTimeSpan ("FetchWaking", valueDefault);
+            return parseTimeSpan (GetValue ("FetchWaking").Split (new string [] { DELIM }, StringSplitOptions.RemoveEmptyEntries), DateTime.Now, TIMESPAN_PARSE_FUNC.DIFFERENCE, valueDefault);
         }
 
-        private TimeSpan parseTimeSpan (string nameParameter, string valueDefault)
+        public static TimeSpan parseTimeSpan (string [] values, DateTime now, TIMESPAN_PARSE_FUNC eFunc, string valueDefault)
         {
             TimeSpan tsRes = TimeSpan.MinValue;
 
-            string [] values = null;
-            string delim = ";";
+            Func<string, DateTime, TimeSpan> func
+                // обычное извлечение/разбор значения
+                , native = delegate (string value, DateTime datetimeNow) {
+                // 2-nd argument not used
+                    return TimeSpan.Parse (value);
+                }
+                // функция получения интервала от текущего времени до указанного в аргументе
+                , difference = delegate (string value, DateTime datetimeNow) {
+                TimeSpan tsRet = TimeSpan.Zero
+                    , tsNow = TimeSpan.FromSeconds (datetimeNow.Minute * 60 + datetimeNow.Second)
+                    , tsValue = native (value, DateTime.MinValue); // 2-nd argument not used
 
-            try {
-                values = GetValue (nameParameter).Split (new string [] { delim }, StringSplitOptions.RemoveEmptyEntries);
+                tsValue = tsValue.Add(TimeSpan.FromHours((int)tsValue.TotalHours).Negate());
+                tsRet = tsValue - tsNow;
 
-                if (values.Length == 2) {
-                    tsRes =
-                        //(TimeSpan.ParseExact (values [1], values [0], System.Globalization.CultureInfo.InvariantCulture))
-                        TimeSpan.Parse (values [1])
-                        ;
-                } else
-                    ;
-            } catch (Exception e) {
-                ASUTP.Logging.Logg ().Exception (e, $"FileAppSettings::{nameParameter}() - Length={values.Length}, Values=<{string.Join (delim, values)}>", ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
-            } finally {
-                if (tsRes.Equals (TimeSpan.MinValue) == true)
-                    tsRes = TimeSpan.Parse (valueDefault);
+                if (!(tsRet > TimeSpan.Zero))
+                // если текущее время превысило установленное в аргументе (в текущем часе)
+                // , то возвратить интервал до установленного в аргументе в следующем
+                    tsRet += TimeSpan.FromHours (1);
                 else
                     ;
+
+                return tsRet;
+            };
+
+            func = eFunc == TIMESPAN_PARSE_FUNC.NATIVE
+                ? native
+                    : eFunc == TIMESPAN_PARSE_FUNC.DIFFERENCE
+                        ? difference
+                            : null;
+            try {
+                tsRes =
+                    //(TimeSpan.ParseExact (values [1], values [0], System.Globalization.CultureInfo.InvariantCulture))
+                    //TimeSpan.Parse (values [1])
+                    func (values [1], now)
+                    ;
+            } catch (Exception e) {
+                ASUTP.Logging.Logg ().Exception (e, $"FileAppSettings::parseTimeSpan (Length={values.Length}, Values=<{string.Join (DELIM, values)}>, Func={eFunc}) - ...", ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
+            } finally {
+                if (tsRes.Equals (TimeSpan.MinValue) == true) {
+                    tsRes = func (valueDefault, now);
+                } else
+                    ;
             }
+
 
             return tsRes;
         }
