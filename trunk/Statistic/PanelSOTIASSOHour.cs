@@ -657,7 +657,7 @@ namespace Statistic
                 tableTECComponentNameShr.Columns.Add("id");
 
                 foreach (FormChangeMode.ListBoxItem item in listTECComponentNameShr) {
-                    tableTECComponentNameShr.Rows.Add(item.name_shr, item.id);
+                    tableTECComponentNameShr.Rows.Add(item.name_shr, item.key.Id);
                 }
 
                 ComboBox cbxTECComponent = (this.Controls.Find(KEY_CONTROLS.CB_TECCOMPONENT.ToString(), true))[0] as ComboBox;

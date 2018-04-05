@@ -358,11 +358,6 @@ namespace Statistic
         public PanelAdminKomDisp(ASUTP.Core.HMark markQueries)
             : base(FormChangeMode.MODE_TECCOMPONENT.GTP, markQueries, new int[] { 0, (int)TECComponent.ID.GTP })
         {
-            // 04.04.2018 KhryapinAN - необходимость полей связана с возможным в дальнейшем создания соответсвующих параметров конфигурации (для профиля группы/пользователя)
-            AllowUserImportAdminValuesDefault =
-            AllowUserImportCSVPBRValues =
-                HStatisticUsers.RoleIsKomDisp;
-
             btnImportCSV_AdminDefaultValues.Enabled = AllowUserImportAdminValuesDefault;
             btnImportCSV_PBRValues.Enabled = AllowUserImportCSVPBRValues;
         }
@@ -723,6 +718,11 @@ namespace Statistic
 
         protected override void createAdmin ()
         {
+            // 04.04.2018 KhryapinAN - необходимость полей связана с возможным в дальнейшем создания соответсвующих параметров конфигурации (для профиля группы/пользователя)
+            AllowUserImportAdminValuesDefault =
+            AllowUserImportCSVPBRValues =
+                HStatisticUsers.RoleIsKomDisp || HStatisticUsers.RoleIsAdmin;
+
             EnabledExportPBRValues = (HStatisticUsers.IsAllowed ((int)HStatisticUsers.ID_ALLOWED.EXPORT_PBRVALUES_KOMDISP));
             //??? тоже следует читать из БД конфигурации
             AdminTS_KomDisp.ModeDefaultExportPBRValues = AdminTS_KomDisp.MODE_EXPORT_PBRVALUES.MANUAL;

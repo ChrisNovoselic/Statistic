@@ -27,7 +27,7 @@ namespace StatisticCommon
             /// <summary>
             /// Идентификатор компонента ТЭЦ
             /// </summary>
-            public int id;
+            public KeyDevice key;
             /// <summary>
             /// Краткое наименование компонента (для отображения)
             /// </summary>
@@ -39,9 +39,9 @@ namespace StatisticCommon
             public bool bChecked
                 , bVisibled;
 
-            public ListBoxItem(int id, string name_shr, bool bChecked)
+            public ListBoxItem(KeyDevice key, string name_shr, bool bChecked)
             {
-                this.id = id;
+                this.key = key;
                 this.name_shr = name_shr;
                 this.bChecked = bChecked;
                 bVisibled = false;
@@ -85,7 +85,8 @@ namespace StatisticCommon
         /// <summary>
         /// Перечисление - тип режима
         /// </summary>
-        public enum MODE_TECCOMPONENT : short { Unknown = -2
+        public enum MODE_TECCOMPONENT : short { Unknown = -3
+            , ADMIN = -2
             , VYVOD = -1
             , TEC, GTP, PC, TG
                 , ANY
@@ -206,7 +207,7 @@ namespace StatisticCommon
                         bChecked = true;
                     else
                         ;
-                    m_listItems.Add(new ListBoxItem(t.m_id, t.name_shr, bChecked));
+                    m_listItems.Add(new ListBoxItem(new KeyDevice { Id = t.m_id, Mode = MODE_TECCOMPONENT.TEC }, t.name_shr, bChecked));
 
                     if (t.ListTECComponents.Count > 0)
                     {
@@ -217,7 +218,7 @@ namespace StatisticCommon
                                 bChecked = true;
                             else
                                 ;
-                            m_listItems.Add(new ListBoxItem(g.m_id, t.name_shr + " - " + g.name_shr, bChecked));
+                            m_listItems.Add(new ListBoxItem(new KeyDevice { Id = g.m_id, Mode = TECComponent.GetMode (g.m_id) }, t.name_shr + " - " + g.name_shr, bChecked));
                         }
                     }
                     else
@@ -225,22 +226,22 @@ namespace StatisticCommon
                 }
 
                 bChecked = listIDsProfileCheckedIndices.IndexOf(ID_ADMIN_TABS[(int)MANAGER.DISP]) > -1;
-                m_listItems.Add(new ListBoxItem(ID_ADMIN_TABS[(int)MANAGER.DISP], getNameAdminValues(MANAGER.DISP, MODE_TECCOMPONENT.GTP), bChecked));
+                m_listItems.Add(new ListBoxItem(new KeyDevice { Id = ID_ADMIN_TABS [(int)MANAGER.DISP], Mode = MODE_TECCOMPONENT.ADMIN }, getNameAdminValues(MANAGER.DISP, MODE_TECCOMPONENT.GTP), bChecked));
                 //m_markTabAdminChecked.Set ((int)MANAGER.DISP, bChecked);
 
                 bChecked = listIDsProfileCheckedIndices.IndexOf(ID_ADMIN_TABS[(int)MANAGER.NSS]) > -1;
-                m_listItems.Add(new ListBoxItem(ID_ADMIN_TABS[(int)MANAGER.NSS], getNameAdminValues(MANAGER.NSS, MODE_TECCOMPONENT.TEC), bChecked)); //TEC, TG, PC - не имеет значения...
+                m_listItems.Add(new ListBoxItem(new KeyDevice { Id = ID_ADMIN_TABS [(int)MANAGER.NSS], Mode = MODE_TECCOMPONENT.ADMIN }, getNameAdminValues(MANAGER.NSS, MODE_TECCOMPONENT.TEC), bChecked)); //TEC, TG, PC - не имеет значения...
                 //m_markTabAdminChecked.Set((int)MANAGER.NSS, bChecked);
 
                 bChecked = listIDsProfileCheckedIndices.IndexOf(ID_ADMIN_TABS[(int)MANAGER.ALARM]) > -1;
-                m_listItems.Add(new ListBoxItem(ID_ADMIN_TABS[(int)MANAGER.ALARM], getNameAdminValues(MANAGER.ALARM, MODE_TECCOMPONENT.GTP), bChecked));
+                m_listItems.Add(new ListBoxItem(new KeyDevice { Id = ID_ADMIN_TABS [(int)MANAGER.ALARM], Mode = MODE_TECCOMPONENT.ADMIN }, getNameAdminValues(MANAGER.ALARM, MODE_TECCOMPONENT.GTP), bChecked));
                 //m_markTabAdminChecked.Set((int)MANAGER.ALARM, bChecked);
 
                 bChecked = listIDsProfileCheckedIndices.IndexOf(ID_ADMIN_TABS[(int)MANAGER.LK]) > -1;
-                m_listItems.Add(new ListBoxItem(ID_ADMIN_TABS[(int)MANAGER.LK], getNameAdminValues(MANAGER.LK, MODE_TECCOMPONENT.TEC), bChecked)); //TEC, TG, PC - не имеет значения...
+                m_listItems.Add(new ListBoxItem(new KeyDevice { Id = ID_ADMIN_TABS [(int)MANAGER.LK], Mode = MODE_TECCOMPONENT.ADMIN }, getNameAdminValues(MANAGER.LK, MODE_TECCOMPONENT.TEC), bChecked)); //TEC, TG, PC - не имеет значения...
 
                 bChecked = listIDsProfileCheckedIndices.IndexOf(ID_ADMIN_TABS[(int)MANAGER.TEPLOSET]) > -1;
-                m_listItems.Add(new ListBoxItem(ID_ADMIN_TABS[(int)MANAGER.TEPLOSET], getNameAdminValues(MANAGER.TEPLOSET, MODE_TECCOMPONENT.TEC), bChecked)); //TEC, TG, PC - не имеет значения...
+                m_listItems.Add(new ListBoxItem(new KeyDevice { Id = ID_ADMIN_TABS [(int)MANAGER.TEPLOSET], Mode = MODE_TECCOMPONENT.ADMIN }, getNameAdminValues(MANAGER.TEPLOSET, MODE_TECCOMPONENT.TEC), bChecked)); //TEC, TG, PC - не имеет значения...
 
             }
             else {
@@ -434,7 +435,7 @@ namespace StatisticCommon
 
             if ((idMinVal == -1) || (idMaxVal == -1))
             {
-                idAllowed = (int)alloweds [ID_ADMIN_TABS.ToList ().IndexOf (item.id)];
+                idAllowed = (int)alloweds [ID_ADMIN_TABS.ToList ().IndexOf (item.key.Id)];
 
                 bRes = !(idAllowed < 0);
                 if (bRes == true)
@@ -452,23 +453,23 @@ namespace StatisticCommon
             }
             else
             {
-                bRes = (item.id > idMinVal) && (item.id < idMaxVal);
+                bRes = (item.key.Id > idMinVal) && (item.key.Id < idMaxVal);
                 if (bRes == true)
                     if (IsModeTECComponent(mode) == true) {
-                        if (TECComponent.VerifyID(item.id
+                        if (TECComponent.VerifyID(item.key.Id
                             , TECComponent.ID.TEC, TECComponent.ID.LK, TECComponent.ID.GTP, TECComponent.ID.GTP_LK, TECComponent.ID.PC, TECComponent.ID.TG) == true) {
                             clbMode.Items.Add(item.name_shr);
                             //Контекстное меню - главная форма
                             if (!(m_MainFormContextMenuStripListTecViews == null)) {
                                 m_MainFormContextMenuStripListTecViews.Items.Add(item.name_shr);
 
-                                if (TECComponent.VerifyID(item.id, TECComponent.ID.LK, TECComponent.ID.GTP_LK) == false)
+                                if (TECComponent.VerifyID(item.key.Id, TECComponent.ID.LK, TECComponent.ID.GTP_LK) == false)
                                     foreach (TEC t in m_list_tec) {
-                                        if (t.m_id == item.id)
+                                        if (t.m_id == item.key.Id)
                                             m_list_change_items.Add(item);
                                         else
                                             foreach (TECComponent tc in t.ListTECComponents)
-                                                if (tc.m_id == item.id)
+                                                if (tc.m_id == item.key.Id)
                                                     if (tc.tec.m_id >= (int)TECComponent.ID.LK & tc.tec.m_id < (int)TECComponent.ID.GTP)
                                                         ;
                                                     else {
@@ -488,7 +489,7 @@ namespace StatisticCommon
                             } else
                                 ;
 
-                            if (!(EventMenuItemAdd == null)) EventMenuItemAdd(item.id + @";" + item.name_shr);
+                            if (!(EventMenuItemAdd == null)) EventMenuItemAdd(item.key.Id + @";" + item.name_shr);
 
                             clbMode.SetItemChecked(clbMode.Items.Count - 1, item.bChecked);
                             item.bVisibled = true;
@@ -531,7 +532,7 @@ namespace StatisticCommon
 
             foreach (ListBoxItem item in m_listItems)
             {
-                if (item.id == id)
+                if (item.key.Id == id)
                 {
                     itemRes = item;
                     break;
@@ -570,7 +571,7 @@ namespace StatisticCommon
                 item = findItemOfText(clbMode.GetItemText(clbMode.Items[i]));
                 item.bChecked = ! (clbMode.CheckedIndices.IndexOf(i) < 0);
 
-                iManagerMode = ID_ADMIN_TABS.ToList ().IndexOf (item.id);
+                iManagerMode = ID_ADMIN_TABS.ToList ().IndexOf (item.key.Id);
 
                 if (!(iManagerMode < 0))
                     m_markTabAdminChecked.Set(iManagerMode, item.bChecked);
@@ -621,8 +622,8 @@ namespace StatisticCommon
             string ids = string.Empty;
 
             foreach (ListBoxItem item in m_listItems)
-                if ((item.bChecked == true) && (item.id < ID_ADMIN_TABS [0]))
-                    ids += item.id + @";";
+                if ((item.bChecked == true) && (item.key.Id < ID_ADMIN_TABS [0]))
+                    ids += item.key.Id + @";";
                 else
                     ;
 

@@ -25,7 +25,7 @@ namespace Statistic
             public enum INDEX_PROPERTIES_VIEW { TABLE_MINS, TABLE_HOURS, GRAPH_MINS, GRAPH_HOURS, ORIENTATION, QUICK_PANEL, TABLE_AND_GRAPH, COUNT_PROPERTIES_VIEW };
             private int [] m_propView;
             public static int[] s_propViewDefault = { 0, 0, 0, 1, -1, 0, -1 };
-            public List<int> m_listIdContextMenuItems;
+            //public List<int> m_listIdContextMenuItems;
             private static string[] s_arContentMenuItems = { @"Таблица(мин)", @"Таблица(час)", @"График(мин)", @"График(час)", @"Ориентация", @"Оперативные значения", @"Таблица+Гистограмма" };
             /// <summary>
             /// Событие - инициирует измекнение структуры элемента управления
@@ -69,7 +69,7 @@ namespace Statistic
                 _fontActual =
                     this.Font;
 
-                m_listIdContextMenuItems = new List<int>();
+                //m_listIdContextMenuItems = new List<int>();
 
                 if (arProp == null)
                 {
@@ -360,14 +360,16 @@ namespace Statistic
             /// Возвратить идентификатор п. меню с установленным признаком "Использовать"
             /// </summary>
             /// <returns>Идентификатор п. меню</returns>
-            private int getIdMenuItemChecked()
+            private FormChangeMode.KeyDevice getKeyDeviceMenuItemChecked()
             {
-                int iRes = -1;
+                FormChangeMode.KeyDevice keyRes = FormChangeMode.KeyDevice.Empty;
+                int indxMenuItem = -1;
+
                 // найти индекс п. меню
                 foreach (MenuItem mi in ContextMenu.MenuItems)
                 {
-                    iRes = ContextMenu.MenuItems.IndexOf(mi);
-                    if (iRes < (ContextMenu.MenuItems.Count - COUNT_FIXED_CONTEXT_MENUITEM))
+                    indxMenuItem = ContextMenu.MenuItems.IndexOf(mi);
+                    if (indxMenuItem < (ContextMenu.MenuItems.Count - COUNT_FIXED_CONTEXT_MENUITEM))
                         if (mi.Checked == true)
                             break;
                         else
@@ -376,14 +378,15 @@ namespace Statistic
                         ;
                 }
 
-                if (!(iRes < (ContextMenu.MenuItems.Count - COUNT_FIXED_CONTEXT_MENUITEM)))
-                // идентификатор для этого п. меню нет
-                    iRes = -1;
-                else
+                if (indxMenuItem < (ContextMenu.MenuItems.Count - COUNT_FIXED_CONTEXT_MENUITEM))
                 // присвоить значение идентификатора
-                    iRes = m_listIdContextMenuItems [iRes];
+                    keyRes = (FormChangeMode.KeyDevice)ContextMenu.MenuItems [indxMenuItem].Tag;
 
-                return iRes;
+                else
+                // идентификатор для этого п. меню нет
+                    ;
+
+                return keyRes;
             }
 
             /// <summary>
@@ -392,6 +395,9 @@ namespace Statistic
             /// <param name="arProp">Массив изменяемых парметров объекта отображения</param>
             public void LoadProfile(string []arProp)
             {
+                MenuItem mItem;
+                int indxItem = -1;
+
                 //Очистить
                 ContextMenu.MenuItems[ContextMenu.MenuItems.Count - 1].PerformClick();
                 //Установить параметры содержания отображения
@@ -403,10 +409,13 @@ namespace Statistic
                     ; //Ошибка ...
 
                 //Назначить объект
-                int indx = m_listIdContextMenuItems.IndexOf(Int32.Parse(arProp[1]));
-                if ((!(indx < 0)) && (indx < ContextMenu.MenuItems.Count - COUNT_FIXED_CONTEXT_MENUITEM)) {
+                //int indx = m_listIdContextMenuItems.IndexOf(Int32.Parse(arProp[1]))
+                mItem = ContextMenu.MenuItems.Cast<MenuItem>().First(mi => ((FormChangeMode.KeyDevice)mi.Tag).Id == Int32.Parse (arProp [1]));
+                indxItem = ContextMenu.MenuItems.IndexOf (mItem);
+                if ((!(indxItem < 0))
+                    && (indxItem < ContextMenu.MenuItems.Count - COUNT_FIXED_CONTEXT_MENUITEM)) {
                     // инициировать операции по выбору п. меню
-                    ContextMenu.MenuItems[m_listIdContextMenuItems.IndexOf(Int32.Parse(arProp[1]))].PerformClick();
+                    mItem.PerformClick();
                     // изменить состояние п. меню
                     ContentMenuStateChange();
                 }
@@ -421,12 +430,13 @@ namespace Statistic
             public string SaveProfile()
             {
                 string strRes = string.Empty;
+                FormChangeMode.KeyDevice key_device;
 
-                int idComp = getIdMenuItemChecked();
-                if (!(idComp < 0))
+                key_device = getKeyDeviceMenuItemChecked();
+                if (!(key_device.Id < 0))
                 {
                     //Идентификатор объекта...
-                    strRes += idComp.ToString(); strRes += CHAR_DELIM_PROP;
+                    strRes += key_device.Id.ToString(); strRes += CHAR_DELIM_PROP;
                     //Параметры объекта...
                     foreach (int prop in m_propView)
                         strRes += prop.ToString() + CHAR_DELIM_ARRAYITEM;
@@ -471,6 +481,8 @@ namespace Statistic
         /// </summary>
         private void InitializeComponent()
         {
+            MenuItem mItem;
+
             components = new System.ComponentModel.Container();
 
             PanelTecViewBase [] arPanelTecViewTable = new PanelTecViewBase [this.RowCount * this.ColumnCount];
@@ -488,10 +500,12 @@ namespace Statistic
                 foreach (FormChangeMode.ListBoxItem item in m_formChangeMode.m_listItems)
                 {
                     if ((item.bVisibled == true)
-                        && (item.id < FormChangeMode.ID_ADMIN_TABS [(int)FormChangeMode.MANAGER.DISP]))
+                        && (item.key.Id < FormChangeMode.ID_ADMIN_TABS [(int)FormChangeMode.MANAGER.DISP]))
                     {
-                        m_arLabelEmpty[i].ContextMenu.MenuItems.Add(createMenuItem(item.name_shr));
-                        m_arLabelEmpty[i].m_listIdContextMenuItems.Add(item.id);
+                        mItem = createMenuItem (item.name_shr);
+                        m_arLabelEmpty [i].ContextMenu.MenuItems.Add(mItem);
+                        mItem.Tag = item.key;
+                        //m_arLabelEmpty[i].m_listIdContextMenuItems.Add(item.id);
                     }
                     else
                         ;
@@ -655,7 +669,7 @@ namespace Statistic
                     le.ContextMenu.MenuItems.RemoveAt (0);
                 }
 
-                le.m_listIdContextMenuItems.Clear();
+                //le.m_listIdContextMenuItems.Clear();
             }
 
             m_indxContentMenuItem = INDEX_START_CONTEXT_MENUITEM;
@@ -667,13 +681,16 @@ namespace Statistic
         private void OnMenuItemAdd (string item) {
             int indx = -1
                 , id = Int32.Parse (item.Split (';')[0]);
+            MenuItem mItem;
             string nameItem = item.Split(';')[1];
             foreach (HLabelCustomTecView le in m_arLabelEmpty)
             {
                 indx = le.ContextMenu.MenuItems.Count - COUNT_FIXED_CONTEXT_MENUITEM;
                 if (indx < 0) indx = 0; else ;
-                le.ContextMenu.MenuItems.Add(indx, createMenuItem(nameItem));
-                le.m_listIdContextMenuItems.Add(id);
+                mItem = createMenuItem (nameItem);
+                le.ContextMenu.MenuItems.Add(indx, mItem);
+                //le.m_listIdContextMenuItems.Add(id);
+                mItem.Tag = new FormChangeMode.KeyDevice { Id = id, Mode = TECComponent.GetMode (id) };
             }
 
             m_indxContentMenuItem ++;
@@ -686,19 +703,22 @@ namespace Statistic
         private void MenuItem_OnClick(object obj, EventArgs ev)
         {
             int indxLabel = -1
-                , indx = ((MenuItem)obj).Index
-                , id_comp = -1;
+                , indx = ((MenuItem)obj).Index;
+            FormChangeMode.KeyDevice key_device = FormChangeMode.KeyDevice.Empty;
+            TEC tec = null;
+            TECComponent tec_comp = null;
+            Point ptAddress;
+            PanelTecViewBase panelTecView = null;
 
             foreach (HLabelCustomTecView le in m_arLabelEmpty)
                 if (le.ContextMenu == ((ContextMenu)((MenuItem)obj).Parent)) {
                     indxLabel++;
                     break;
-                }
-                else
-                    indxLabel ++;
+                } else
+                    indxLabel++;
 
             if ((indxLabel < 0)
-                || (! (indxLabel < m_arLabelEmpty.Length)))
+                || (!(indxLabel < m_arLabelEmpty.Length)))
                 return;
             else
                 ;
@@ -710,61 +730,69 @@ namespace Statistic
                 foreach (MenuItem mi in ((ContextMenu)((MenuItem)obj).Parent).MenuItems) {
                     if (mi.Checked == true) {
                         mi.Checked = false;
-                    }
-                    else
+                    } else
                         ;
                 }
-                clearAddress(indxLabel);
+                clearAddress (indxLabel);
 
-                EnableLabelContextMenuItem(indxLabel, false);
-            }
-            else {
-                if (((MenuItem)obj).Checked == true)
-                {
+                EnableLabelContextMenuItem (indxLabel, false);
+            } else {
+                if (((MenuItem)obj).Checked == true) {
                     //Снять с отображения
                     ((MenuItem)obj).Checked = false;
-                    clearAddress(indxLabel);
+                    clearAddress (indxLabel);
 
-                    EnableLabelContextMenuItem(indxLabel, false);  //.ContextMenu.MenuItems [m_indxContentMenuItem].Enabled = false;
-                }
-                else
-                {
+                    EnableLabelContextMenuItem (indxLabel, false);  //.ContextMenu.MenuItems [m_indxContentMenuItem].Enabled = false;
+                } else {
                     //Снять с отображения
                     foreach (MenuItem mi in ((ContextMenu)((MenuItem)obj).Parent).MenuItems) {
-                        if ((mi.Checked == true) && (! (mi.Index == indx))) {
+                        if ((mi.Checked == true) && (!(mi.Index == indx))) {
                             mi.Checked = false;
-                        }
-                        else
+                        } else
                             ;
                     }
-                    clearAddress(indxLabel);
+                    clearAddress (indxLabel);
 
                     //Вызвать на отображение
                     ((MenuItem)obj).Checked = true;
                     // отображаем вкладки ТЭЦ - аналог FormMain::сменитьРежим...
-                    int tec_id = m_arLabelEmpty [indxLabel].m_listIdContextMenuItems [m_arLabelEmpty[indxLabel].ContextMenu.MenuItems.IndexOf (obj as MenuItem)]
-                        , TECComponent_id = m_arLabelEmpty [indxLabel].m_listIdContextMenuItems [m_arLabelEmpty[indxLabel].ContextMenu.MenuItems.IndexOf (obj as MenuItem)];
-                    Point ptAddress = getAddress(indxLabel);
-                    TEC tec = m_formChangeMode.m_list_tec.Find (t => t.m_id == tec_id);
-                    TECComponent tec_comp = tec.ListTECComponents.Find (comp => comp.m_id == TECComponent_id);
-                    FormChangeMode.KeyDevice key = new FormChangeMode.KeyDevice () {
-                        Id = Equals (tec_comp, null) == true ? tec.m_id : tec_comp.m_id
-                        , Mode = Equals (tec_comp, null) == true ? FormChangeMode.MODE_TECCOMPONENT.TEC : tec_comp.Mode };
+                    key_device = (FormChangeMode.KeyDevice)(obj as MenuItem).Tag;
+                    switch (key_device.Mode) {
+                        case FormChangeMode.MODE_TECCOMPONENT.TEC:
+                            tec = m_formChangeMode.m_list_tec.Find (t => t.m_id == key_device.Id);
+                            break;
+                        case FormChangeMode.MODE_TECCOMPONENT.GTP:
+                            foreach (TEC t in m_formChangeMode.m_list_tec) {
+                            }
+                            tec = m_formChangeMode.m_list_tec.Find (t => {
+                                return !(t.ListTECComponents.FindIndex(comp => comp.m_id == key_device.Id) < 0);
+                            });
+                            tec_comp = tec.ListTECComponents.Find (comp => comp.m_id == key_device.Id);
+                            break;
+                        default:
+                            break;
+                    }
+                    ptAddress = getAddress (indxLabel);
 
-                    PanelTecViewBase panelTecView = null;
-                    if (tec.m_id > (int)TECComponent.ID.LK)
-                        panelTecView = new PanelLKView(tec, key, m_arLabelEmpty[indxLabel]);
-                    else
-                        panelTecView = new PanelTecView(tec, key, m_arLabelEmpty[indxLabel]);
-                    //        new PanelTecView(m_formChangeMode.m_list_tec[tec_index], tec_index, TECComponent_index, m_arLabelEmpty[indxLabel]/*, m_fErrorReport, m_fWarningReport, m_fActionReport, m_fReportClear*/);
-                    panelTecView.SetDelegateReport(m_fErrorReport, m_fWarningReport, m_fActionReport, m_fReportClear);
-                    this.Controls.Add (panelTecView, ptAddress.Y, ptAddress.X);
-                    this.Controls.SetChildIndex(panelTecView, indxLabel);
-                    indxLabel = this.Controls.GetChildIndex(panelTecView);
-                    ((PanelTecViewBase)this.Controls [indxLabel]).Start ();
-                    ((PanelTecViewBase)this.Controls[indxLabel]).Activate(true);
+                    panelTecView = null;
+                    try {
+                        if (tec.m_id > (int)TECComponent.ID.LK)
+                            panelTecView = new PanelLKView (tec, key_device, m_arLabelEmpty [indxLabel]);
+                        else
+                            panelTecView = new PanelTecView (tec, key_device, m_arLabelEmpty [indxLabel]);
+                        //        new PanelTecView(m_formChangeMode.m_list_tec[tec_index], tec_index, TECComponent_index, m_arLabelEmpty[indxLabel]/*, m_fErrorReport, m_fWarningReport, m_fActionReport, m_fReportClear*/);
+                        panelTecView.SetDelegateReport (m_fErrorReport, m_fWarningReport, m_fActionReport, m_fReportClear);
+                        this.Controls.Add (panelTecView, ptAddress.Y, ptAddress.X);
+                        this.Controls.SetChildIndex (panelTecView, indxLabel);
+                        indxLabel = this.Controls.GetChildIndex (panelTecView);
+                        ((PanelTecViewBase)this.Controls [indxLabel]).Start ();
+                        ((PanelTecViewBase)this.Controls [indxLabel]).Activate (true);
+                    } catch (Exception e) {
+                        ASUTP.Logging.Logg ().Exception (e, $"PanelCustomTecView::MenuItem_OnClick () - Индекс={indxLabel}, KeyDevice={key_device.ToString()}..."
+                            , ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
+                    }
 
-                    EnableLabelContextMenuItem(indxLabel, true);
+                    EnableLabelContextMenuItem (indxLabel, true);
                 }
             }
 

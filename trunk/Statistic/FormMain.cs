@@ -1633,22 +1633,22 @@ namespace Statistic
                     && (formChangeMode.m_listItems[i].bChecked == true))
                 {
                     // не рассматривать не стандартные вкладки, наприммер 'ПБР-диспетчер', 'Сигн.-диспетчер', 'ПБР-НСС'
-                    if (formChangeMode.m_listItems[i].id > (int)TECComponent.ID.MAX)
+                    if (formChangeMode.m_listItems[i].key.Id > (int)TECComponent.ID.MAX)
                         continue;
                     else
                         ;
                     // поиск панели для вкладки начать с обнуления объекта
                     keyToAdding = FormChangeMode.KeyDevice.Empty;
                     //Найти индекс панели в списке для стандартных вкладок
-                    panel = m_listStandardTabs.Find(p => p.m_tecView.CurrentKey.Id == formChangeMode.m_listItems[i].id);
+                    panel = m_listStandardTabs.Find(p => p.m_tecView.CurrentKey.Id == formChangeMode.m_listItems[i].key.Id);
 
                     if (Equals(panel, null) == true)
                     {//Не найден элемент - создаем, добавляем
                         foreach (StatisticCommon.TEC t in formChangeMode.m_list_tec)
                         {
-                            if (t.m_id == formChangeMode.m_listItems[i].id)
+                            if (t.m_id == formChangeMode.m_listItems[i].key.Id)
                             {
-                                keyToAdding = new FormChangeMode.KeyDevice () { Id = formChangeMode.m_listItems [i].id, Mode = TECComponent.GetMode (formChangeMode.m_listItems [i].id) };
+                                keyToAdding = new FormChangeMode.KeyDevice () { Id = formChangeMode.m_listItems [i].key.Id, Mode = TECComponent.GetMode (formChangeMode.m_listItems [i].key.Id) };
                                 // добавить панель
                                 addPanelTecView (t, keyToAdding);
                                 // сохранить индекс добавленной панели
@@ -1663,9 +1663,9 @@ namespace Statistic
                             {
                                 foreach (TECComponent g in t.ListTECComponents)
                                 {
-                                    if (g.m_id == formChangeMode.m_listItems[i].id)
+                                    if (g.m_id == formChangeMode.m_listItems[i].key.Id)
                                     {
-                                        keyToAdding = new FormChangeMode.KeyDevice () { Id = formChangeMode.m_listItems [i].id, Mode = TECComponent.GetMode (formChangeMode.m_listItems [i].id) };
+                                        keyToAdding = new FormChangeMode.KeyDevice () { Id = formChangeMode.m_listItems [i].key.Id, Mode = TECComponent.GetMode (formChangeMode.m_listItems [i].key.Id) };
                                         // добавить панель
                                         addPanelTecView (t, keyToAdding);
                                         // сохранить индекс добавленной панели
@@ -2002,7 +2002,7 @@ namespace Statistic
                 , HStatisticUsers.ID_ALLOWED.AUTO_TAB_PBR_NSS
                 , HStatisticUsers.ID_ALLOWED.AUTO_TAB_ALARM
                 , HStatisticUsers.ID_ALLOWED.AUTO_TAB_LK_ADMIN
-                ,HStatisticUsers.ID_ALLOWED.AUTO_TAB_TEPLOSET_ADMIN
+                , HStatisticUsers.ID_ALLOWED.AUTO_TAB_TEPLOSET_ADMIN
             };
 
             if (HStatisticUsers.RoleIsDisp == true)
@@ -2021,8 +2021,10 @@ namespace Statistic
                             //Passwords.INDEX_ROLES.COM_DISP
                             // 04.04.2018 KhryapinAN - для возможности НСС устанавливать значения инициатив собственных
                             // , кроме этого требуется разрешить НСС использование вкладки "ПБР - диспетчер"
-                            HStatisticUsers.RoleIsKomDisp == true ? Passwords.INDEX_ROLES.COM_DISP : Passwords.INDEX_ROLES.NSS
-                                ;
+                            ((HStatisticUsers.RoleIsKomDisp == true)
+                                || (HStatisticUsers.RoleIsAdmin == true))? Passwords.INDEX_ROLES.COM_DISP
+                                : (HStatisticUsers.RoleIsDisp == true) ? Passwords.INDEX_ROLES.NSS
+                                    : Passwords.INDEX_ROLES.COM_DISP;
                     else
                         if ((modeAdmin == FormChangeMode.MANAGER.NSS)
                             || (modeAdmin == FormChangeMode.MANAGER.TEPLOSET))

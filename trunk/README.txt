@@ -280,3 +280,8 @@ to avoid corrupting the repository.
 1) objectalarm.cs - 'error' на 'warning'
 2) viewalarm.cs - remark action every pool_time seconds
 3) AdminTS.cs - разделитель + нова строка 
+
+2.0.10.3 05-04-2018 (нов.-2.0.10.5)
+1) устранение ошибки PanelCustomTecView
+1.1) применение KeyDevice к меню FormChangeMode
+1.2) применение KeyDevice к контекстному меню PanelCustomTecView
