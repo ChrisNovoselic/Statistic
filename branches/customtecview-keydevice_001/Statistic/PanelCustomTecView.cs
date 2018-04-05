@@ -22,11 +22,10 @@ namespace Statistic
 
         public class HLabelCustomTecView : Label {
             public static string s_msg = @"Добавить выбором пункта контекстного меню...";
-            public enum INDEX_PROPERTIES_VIEW { TABLE_MINS, TABLE_HOURS, GRAPH_MINS, GRAPH_HOURS, ORIENTATION, QUICK_PANEL, TABLE_AND_GRAPH, COUNT_PROPERTIES_VIEW };
-            private int [] m_propView;
-            public static int[] s_propViewDefault = { 0, 0, 0, 1, -1, 0, -1 };
+            private LabelViewProperties m_propView;
+            //public static LabelViewProperties s_propViewDefault = new LabelViewProperties () { Item1 = 0 };
             //public List<int> m_listIdContextMenuItems;
-            private static string[] s_arContentMenuItems = { @"Таблица(мин)", @"Таблица(час)", @"График(мин)", @"График(час)", @"Ориентация", @"Оперативные значения", @"Таблица+Гистограмма" };
+            //private static string[] s_arContentMenuItems = { @"Таблица(мин)", @"Таблица(час)", @"График(мин)", @"График(час)", @"Ориентация", @"Оперативные значения", @"Таблица+Гистограмма" };
             /// <summary>
             /// Событие - инициирует измекнение структуры элемента управления
             /// </summary>
@@ -52,7 +51,7 @@ namespace Statistic
             /// <summary>
             /// Значение признака ориентации размещения таблиц, графиков
             /// </summary>
-            private int m_prevViewOrientation;
+            private LabelViewProperties.VALUE m_prevViewOrientation;
 
             /// <summary>
             /// Конструктор - основной (без параметров)
@@ -72,20 +71,11 @@ namespace Statistic
                 //m_listIdContextMenuItems = new List<int>();
 
                 if (arProp == null)
-                {
-                    m_propView = new int[s_propViewDefault.Length];
-                    s_propViewDefault.CopyTo(m_propView, 0);
-                }
+                    m_propView = new LabelViewProperties ();
                 else
-                    if (arProp.Length == s_propViewDefault.Length)
-                    {
-                        m_propView = new int[arProp.Length];
-                        arProp.CopyTo(m_propView, 0);
-                    }
-                    else
-                        throw new Exception(@"HLabelCustomTecView::ctor () - длина массива свойств ...");
+                    ;
 
-                m_prevViewOrientation = m_propView[(int)INDEX_PROPERTIES_VIEW.ORIENTATION];
+                m_prevViewOrientation = m_propView.GetValue(LabelViewProperties.INDEX_PROPERTIES_VIEW.ORIENTATION);
 
                 ForeColorChanged += new EventHandler (onForeColorChanged);
                 BackColorChanged += new EventHandler (onBackColorChanged);
@@ -105,7 +95,7 @@ namespace Statistic
                 if ((((MenuItem)obj).Parent is MenuItem) && (! (((MenuItem)obj).Parent.MenuItems.Count == 2)))
                     setProperty(((MenuItem)obj).Index, ((MenuItem)obj).Checked == true ? 0 : 1);
                 else
-                    setProperty((int)INDEX_PROPERTIES_VIEW.ORIENTATION, indx);
+                    setProperty((int)LabelViewProperties.INDEX_PROPERTIES_VIEW.ORIENTATION, indx);
 
                 EventRestruct (m_propView);
 
@@ -120,33 +110,35 @@ namespace Statistic
             /// <param name="indx">Индекс свойства</param>
             /// <param name="newVal">Новое значение свойства</param>
             private void setProperty (int indx, int newVal) {
-                m_propView [indx] = newVal;
+                m_propView.SetValue((LabelViewProperties.INDEX_PROPERTIES_VIEW)indx, (LabelViewProperties.VALUE)newVal);
 
                 int i = -1
                     , cnt = 0;
-                for (i = (int)INDEX_PROPERTIES_VIEW.TABLE_MINS; ! (i > (int)INDEX_PROPERTIES_VIEW.GRAPH_HOURS); i ++)
-                    if (m_propView [i] == 1) cnt ++; else ;
+                LabelViewProperties.INDEX_PROPERTIES_VIEW indxStart = LabelViewProperties.INDEX_PROPERTIES_VIEW.UNKNOWN
+                    , indxEnd = LabelViewProperties.INDEX_PROPERTIES_VIEW.UNKNOWN;
+
+                cnt = m_propView.CountOn;
 
                 if (cnt > 1) {
                     if (cnt > 2) {
                         //if (cnt > 3) {
-                            int iStart = -1
-                                , iEnd = -1;
-                            if (indx < (int)INDEX_PROPERTIES_VIEW.GRAPH_MINS)
+                            indxStart = LabelViewProperties.INDEX_PROPERTIES_VIEW.UNKNOWN;
+                            indxEnd = LabelViewProperties.INDEX_PROPERTIES_VIEW.UNKNOWN;
+                            if (indx < (int)LabelViewProperties.INDEX_PROPERTIES_VIEW.GRAPH_MINS)
                             { //3-й установленный признак - таблица: снять с отображения графики
-                                iStart = (int)INDEX_PROPERTIES_VIEW.GRAPH_MINS;
-                                iEnd = (int)INDEX_PROPERTIES_VIEW.GRAPH_HOURS;
+                                indxStart = LabelViewProperties.INDEX_PROPERTIES_VIEW.GRAPH_MINS;
+                                indxEnd = LabelViewProperties.INDEX_PROPERTIES_VIEW.GRAPH_HOURS;
                             }
                             else
                             { //3-й установленный признак - график: снять с отображения таблицы
-                                iStart = (int)INDEX_PROPERTIES_VIEW.TABLE_MINS;
-                                iEnd = (int)INDEX_PROPERTIES_VIEW.TABLE_HOURS;
+                                indxStart = LabelViewProperties.INDEX_PROPERTIES_VIEW.TABLE_MINS;
+                                indxEnd = LabelViewProperties.INDEX_PROPERTIES_VIEW.TABLE_HOURS;
                             }
 
-                            for (i = iStart; ! (i > iEnd); i ++) {
+                            for (i = (int)indxStart; ! (i > (int)indxEnd); i ++) {
                                 cnt -= m_propView [i] ;
-                                m_propView [i] = 0; //Снять с отображения
-                            }
+                                m_propView.SetValue ((LabelViewProperties.INDEX_PROPERTIES_VIEW)i, LabelViewProperties.VALUE.Zero); //Снять с отображения
+                        }
 
                         //} else ;
                     }
@@ -154,19 +146,18 @@ namespace Statistic
                         ;
 
                     if (cnt > 1)
-                        if (m_propView[(int)INDEX_PROPERTIES_VIEW.ORIENTATION] < 0)
+                        if (m_propView.GetValue(LabelViewProperties.INDEX_PROPERTIES_VIEW.ORIENTATION) == LabelViewProperties.VALUE.OFF)
                             if (m_prevViewOrientation < 0)
-                                m_propView[(int)INDEX_PROPERTIES_VIEW.ORIENTATION] = 0; //Вертикально - по умолчанию
+                                m_propView.SetValue(LabelViewProperties.INDEX_PROPERTIES_VIEW.ORIENTATION, LabelViewProperties.VALUE.Zero); //Вертикально - по умолчанию
                             else
                                 //Восстановить значение "ориентация сплиттера"
-                                m_propView[(int)INDEX_PROPERTIES_VIEW.ORIENTATION] = m_prevViewOrientation;
+                                m_propView.SetValue(LabelViewProperties.INDEX_PROPERTIES_VIEW.ORIENTATION, m_prevViewOrientation);
                         else
                             ; //Оставить "как есть"
                     else
                         //Запомнить предыдущее стостояние "ориентация сплиттера"
                         savePrevViewOrientation ();
-                }
-                else {
+                } else {
                     //Запомнить предыдущее стостояние "ориентация сплиттера"
                     savePrevViewOrientation ();
                 }
@@ -176,9 +167,9 @@ namespace Statistic
             /// Запомнить предыдущее стостояние "ориентация сплиттера"
             /// </summary>
             private void savePrevViewOrientation () {
-                m_prevViewOrientation = m_propView[(int)INDEX_PROPERTIES_VIEW.ORIENTATION];
+                m_prevViewOrientation = m_propView.GetValue(LabelViewProperties.INDEX_PROPERTIES_VIEW.ORIENTATION);
                 //Блокировать возможность выбора "ориентация сплиттера"
-                m_propView[(int)INDEX_PROPERTIES_VIEW.ORIENTATION] = -1;
+                m_propView.SetValue(LabelViewProperties.INDEX_PROPERTIES_VIEW.ORIENTATION, LabelViewProperties.VALUE.OFF);
             }
 
             /// <summary>
@@ -187,32 +178,24 @@ namespace Statistic
             /// <returns></returns>
             private MenuItem[] createContentMenuItems()
             {
-                int indx = -1;
-                MenuItem[] arMenuItems = new MenuItem[(int)INDEX_PROPERTIES_VIEW.COUNT_PROPERTIES_VIEW];
+                LabelViewProperties.INDEX_PROPERTIES_VIEW indx = LabelViewProperties.INDEX_PROPERTIES_VIEW.UNKNOWN;
+                MenuItem[] arMenuItems = new MenuItem[(int)LabelViewProperties.INDEX_PROPERTIES_VIEW.COUNT_PROPERTIES_VIEW];
 
-                indx = (int)INDEX_PROPERTIES_VIEW.TABLE_MINS;
-                arMenuItems [indx] = new MenuItem (s_arContentMenuItems[indx], this.OnMenuItem_Content);
+                for (indx = 0; indx < LabelViewProperties.INDEX_PROPERTIES_VIEW.COUNT_PROPERTIES_VIEW; indx++) {
+                    arMenuItems [(int)indx] = new MenuItem (LabelViewProperties.GetText (indx), this.OnMenuItem_Content);
+                    arMenuItems [(int)indx].Tag = indx;
 
-                indx = (int)INDEX_PROPERTIES_VIEW.TABLE_HOURS;
-                arMenuItems [indx] = new MenuItem (s_arContentMenuItems[indx], this.OnMenuItem_Content);
+                    if (indx == LabelViewProperties.INDEX_PROPERTIES_VIEW.ORIENTATION) {
+                        arMenuItems [(int)indx] = new MenuItem (LabelViewProperties.GetText (indx), new MenuItem [] {
+                            new MenuItem (@"Вертикально", this.OnMenuItem_Content)
+                            , new MenuItem (@"Горизонтально", this.OnMenuItem_Content)
+                        });
 
-                indx = (int)INDEX_PROPERTIES_VIEW.GRAPH_MINS;
-                arMenuItems [indx] = new MenuItem (s_arContentMenuItems[indx], this.OnMenuItem_Content);
-
-                indx = (int)INDEX_PROPERTIES_VIEW.GRAPH_HOURS;
-                arMenuItems[indx] = new MenuItem(s_arContentMenuItems[indx], this.OnMenuItem_Content);
-
-                indx = (int)INDEX_PROPERTIES_VIEW.ORIENTATION;
-                arMenuItems [indx] = new MenuItem (s_arContentMenuItems[indx], new MenuItem[] {
-                    new MenuItem (@"Вертикально", this.OnMenuItem_Content)
-                    , new MenuItem (@"Горизонтально", this.OnMenuItem_Content)
-                });
-
-                indx = (int)INDEX_PROPERTIES_VIEW.QUICK_PANEL;
-                arMenuItems [indx] = new MenuItem (s_arContentMenuItems[indx], this.OnMenuItem_Content);
-
-                indx = (int)INDEX_PROPERTIES_VIEW.TABLE_AND_GRAPH;
-                arMenuItems[indx] = new MenuItem(s_arContentMenuItems[indx], this.OnMenuItem_Content);
+                        arMenuItems[0].Tag = SplitterPanel.or
+                    } else
+                        ;
+                }
+                
 
                 return arMenuItems;
             }
@@ -404,7 +387,7 @@ namespace Statistic
                 string[] arPropVal = arProp[2].Split(CHAR_DELIM_ARRAYITEM);
                 if (arPropVal.Length == m_propView.Length)
                     for (int i = 0; i < m_propView.Length; i ++)
-                        m_propView [i] = Int32.Parse (arPropVal [i]);
+                        m_propView.SetValue((LabelViewProperties.INDEX_PROPERTIES_VIEW)i, (LabelViewProperties.VALUE)Int32.Parse (arPropVal [i]));
                 else
                     ; //Ошибка ...
 
@@ -423,10 +406,89 @@ namespace Statistic
                     ; //??? Ошибка: не найден
             }
 
+            [Serializable]
+            public struct LabelCustomTecViewProfile
+            {
+                public FormChangeMode.KeyDevice Key;
+
+                public LabelViewProperties Properties;
+            }
+
+            [Serializable]
+            public class LabelViewProperties
+            {
+                public enum VALUE { OFF = -1, Zero, ON }
+
+                public enum INDEX_PROPERTIES_VIEW { UNKNOWN = -1, TABLE_MINS, TABLE_HOURS, GRAPH_MINS, GRAPH_HOURS, ORIENTATION, QUICK_PANEL, TABLE_AND_GRAPH, COUNT_PROPERTIES_VIEW };
+
+                private List<VALUE> _values;
+
+                private static List<VALUE> s_defaultValues = new List<VALUE>() {
+                    VALUE.OFF // TABLE_MINS
+                    , VALUE.OFF // TABLE_HOURS
+                    , VALUE.OFF // GRAPH_MINS
+                    , VALUE.OFF // GRAPH_HOURS
+                    , VALUE.OFF // ORIENTATION
+                    , VALUE.OFF // QUICK_PANEL
+                    , VALUE.OFF // TABLE_AND_GRAPH
+                };
+
+                public LabelViewProperties ()
+                {
+                    _values = new List<VALUE> (s_defaultValues);
+                }
+
+                public LabelViewProperties (LabelViewProperties dest)
+                    : this()
+                {
+                    
+                }
+
+                public static string GetText (INDEX_PROPERTIES_VIEW indx)
+                {
+                    string [] array = { @"Таблица(мин)", @"Таблица(час)", @"График(мин)", @"График(час)", @"Ориентация", @"Оперативные значения", @"Таблица+Гистограмма" };
+
+                    return array [(int)indx];
+                }
+
+                public VALUE GetValue (INDEX_PROPERTIES_VIEW indx)
+                {
+                    return _values [(int)indx];
+                }
+
+                public void SetValue (INDEX_PROPERTIES_VIEW indx, VALUE value)
+                {
+                    _values [(int)indx] = value;
+                }
+
+                public void CopyTo (LabelViewProperties dest)
+                {
+
+                }
+
+                public int Length
+                {
+                    get
+                    {
+                        return (int)INDEX_PROPERTIES_VIEW.COUNT_PROPERTIES_VIEW;
+                    }
+                }
+
+                public int CountOn
+                {
+                    get
+                    {
+                        return _values.Count (v => v == VALUE.ON);
+                    }
+                }
+
+                public int Item1;
+            }
+
             /// <summary>
             /// Возвратить строку с закодированными настройками объекта отображения
             /// </summary>
-            /// <returns></returns>
+            /// <returns>Строка для восстановления внешнего вида объекта при очередном вызове на отображение</returns>
             public string SaveProfile()
             {
                 string strRes = string.Empty;
@@ -447,6 +509,26 @@ namespace Statistic
                     ;
 
                 return strRes;
+            }
+
+            public LabelCustomTecViewProfile SaveProfile ()
+            {
+                LabelCustomTecViewProfile profileRes;
+                FormChangeMode.KeyDevice key_device;
+
+                key_device = getKeyDeviceMenuItemChecked ();
+                if (!(key_device.Id < 0)) {
+                    //Идентификатор объекта...
+                    profileRes.Key = key_device;
+                    //Параметры объекта...
+                    foreach (int prop in m_propView)
+                        strRes += prop.ToString () + CHAR_DELIM_ARRAYITEM;
+                    //Обрезать лишний символ-разделитель 'CHAR_DELIM_ARRAYITEM'
+                    strRes = strRes.Substring (0, strRes.Length - 1);
+                } else
+                    ;
+
+                return profileRes;
             }
         }
 

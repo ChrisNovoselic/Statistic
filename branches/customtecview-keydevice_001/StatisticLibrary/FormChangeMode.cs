@@ -92,6 +92,7 @@ namespace StatisticCommon
                 , ANY
         };
 
+        [Serializable]
         public struct KeyDevice : IComparable<KeyDevice>
         {
             public int Id { get; set; }
