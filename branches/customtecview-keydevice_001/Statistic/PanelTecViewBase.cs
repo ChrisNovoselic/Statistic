@@ -683,7 +683,7 @@ namespace Statistic
                 else
                     ;
 
-                m_label.EventRestruct += new DelegateObjectFunc(OnEventRestruct);
+                m_label.EventRestruct += new Action<LabelViewProperties> (OnEventRestruct);
                 //m_label.PerformRestruct (
             }
             else
@@ -859,9 +859,9 @@ namespace Statistic
 
         private int getHeightItem (bool bUseLabel, int iRow) { return bUseLabel == true ? m_arPercRows[iRow] : m_arPercRows[iRow] + m_arPercRows[iRow + 1]; }
 
-        protected void OnEventRestruct(object pars)
+        protected void OnEventRestruct(LabelViewProperties propView)
         {
-            int[] propView = pars as int[];
+            //int[] propView = pars as int[];
 
             this.Controls.Clear();
             this.RowStyles.Clear();
@@ -888,20 +888,20 @@ namespace Statistic
             //// , не ~ от того используется ли 'm_label'
             //iRow++;
 
-            if (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.ORIENTATION] < 0)
+            if (propView.GetValue(LabelViewProperties.INDEX_PROPERTIES_VIEW.ORIENTATION) == LabelViewProperties.VALUE.DISABLED)
             {
                 //Отобразить ТОЛЬКО один элемент
                 bool bVisible = true;
-                if (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_MINS] == 1)
+                if (propView.GetValue (LabelViewProperties.INDEX_PROPERTIES_VIEW.TABLE_MINS) == LabelViewProperties.VALUE.ON)
                     this.Controls.Add(m_dgwMins, 0, iRow);
                 else
-                    if (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_HOURS] == 1)
+                    if (propView.GetValue (LabelViewProperties.INDEX_PROPERTIES_VIEW.TABLE_HOURS) == LabelViewProperties.VALUE.ON)
                         this.Controls.Add(m_dgwHours, 0, iRow);
                     else
-                        if (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.GRAPH_MINS] == 1)
+                        if (propView.GetValue (LabelViewProperties.INDEX_PROPERTIES_VIEW.GRAPH_MINS) == LabelViewProperties.VALUE.ON)
                             this.Controls.Add(m_ZedGraphMins, 0, iRow);
                         else
-                            if (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.GRAPH_HOURS] == 1)
+                            if (propView.GetValue (LabelViewProperties.INDEX_PROPERTIES_VIEW.GRAPH_HOURS) == LabelViewProperties.VALUE.ON)
                                 this.Controls.Add(m_ZedGraphHours, 0, iRow);
                             else
                                 bVisible = false;
@@ -918,13 +918,15 @@ namespace Statistic
             }
             else
             { //Отобразить ДВА или ЧЕТЫРЕ элемента
-                if ((propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_MINS] == 1) && (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_HOURS] == 1) &&
-                    (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.GRAPH_MINS] == 1) && (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.GRAPH_HOURS] == 1))
+                if ((propView.GetValue (LabelViewProperties.INDEX_PROPERTIES_VIEW.TABLE_MINS) == LabelViewProperties.VALUE.ON)
+                    && (propView.GetValue (LabelViewProperties.INDEX_PROPERTIES_VIEW.TABLE_HOURS) == LabelViewProperties.VALUE.ON)
+                    && (propView.GetValue (LabelViewProperties.INDEX_PROPERTIES_VIEW.GRAPH_MINS) == LabelViewProperties.VALUE.ON)
+                    && (propView.GetValue (LabelViewProperties.INDEX_PROPERTIES_VIEW.GRAPH_HOURS) == LabelViewProperties.VALUE.ON))
                 { //Отобразить 4 элемента (таблица(мин) + таблица(час) + график(мин) + график(час))
                 }
                 else
                 { //Отобразить ДВА элемента
-                    if (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.ORIENTATION] == 0)
+                    if (propView.GetValue (LabelViewProperties.INDEX_PROPERTIES_VIEW.ORIENTATION) == LabelViewProperties.VALUE.OFF)
                     {
                         stctrView.Orientation = Orientation.Vertical;
 
@@ -937,48 +939,60 @@ namespace Statistic
                         stctrView.SplitterDistance = stctrView.Height / 2;
                     }
 
-                    if ((propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_MINS] == 1) && (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_HOURS] == 1) &&
-                        (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.GRAPH_MINS] == 0) && (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.GRAPH_HOURS] == 0))
+                    if ((propView.IsOn (LabelViewProperties.INDEX_PROPERTIES_VIEW.TABLE_MINS) == true)
+                        && (propView.IsOn (LabelViewProperties.INDEX_PROPERTIES_VIEW.TABLE_HOURS) == true)
+                        && (propView.IsOff (LabelViewProperties.INDEX_PROPERTIES_VIEW.GRAPH_MINS) == true)
+                        && (propView.IsOff (LabelViewProperties.INDEX_PROPERTIES_VIEW.GRAPH_HOURS) == true))
                     { //Отобразить 2 элемента (таблица(мин) + таблица(час))
                         stctrView.Panel1.Controls.Add(m_dgwMins);
                         stctrView.Panel2.Controls.Add(m_dgwHours);
                     }
                     else
                     {
-                        if ((propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_MINS] == 0) && (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_HOURS] == 0) &&
-                            (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.GRAPH_MINS] == 1) && (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.GRAPH_HOURS] == 1))
+                        if ((propView.GetValue (LabelViewProperties.INDEX_PROPERTIES_VIEW.TABLE_MINS) == LabelViewProperties.VALUE.OFF)
+                            && (propView.GetValue (LabelViewProperties.INDEX_PROPERTIES_VIEW.TABLE_HOURS) == LabelViewProperties.VALUE.OFF)
+                            && (propView.GetValue (LabelViewProperties.INDEX_PROPERTIES_VIEW.GRAPH_MINS) == LabelViewProperties.VALUE.ON)
+                            && (propView.GetValue (LabelViewProperties.INDEX_PROPERTIES_VIEW.GRAPH_HOURS) == LabelViewProperties.VALUE.ON))
                         { //Отобразить 2 элемента (график(мин) + график(час))
                             stctrView.Panel1.Controls.Add(m_ZedGraphMins);
                             stctrView.Panel2.Controls.Add(m_ZedGraphHours);
                         }
                         else
                         {
-                            if ((propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_MINS] == 1) && (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_HOURS] == 0) &&
-                                (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.GRAPH_MINS] == 1) && (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.GRAPH_HOURS] == 0))
+                            if ((propView.IsOn (LabelViewProperties.INDEX_PROPERTIES_VIEW.TABLE_MINS) == true)
+                                && (propView.IsOff (LabelViewProperties.INDEX_PROPERTIES_VIEW.TABLE_HOURS) == true)
+                                && (propView.IsOn (LabelViewProperties.INDEX_PROPERTIES_VIEW.GRAPH_MINS) == true)
+                                && (propView.IsOff (LabelViewProperties.INDEX_PROPERTIES_VIEW.GRAPH_HOURS) == true))
                             { //Отобразить 2 элемента (таблица(мин) + график(мин))
                                 stctrView.Panel1.Controls.Add(m_dgwMins);
                                 stctrView.Panel2.Controls.Add(m_ZedGraphMins);
                             }
                             else
                             {
-                                if ((propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_MINS] == 0) && (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_HOURS] == 1) &&
-                                    (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.GRAPH_MINS] == 0) && (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.GRAPH_HOURS] == 1))
+                                if ((propView.IsOff (LabelViewProperties.INDEX_PROPERTIES_VIEW.TABLE_MINS) == true)
+                                    && (propView.IsOn (LabelViewProperties.INDEX_PROPERTIES_VIEW.TABLE_HOURS) == true)
+                                    && (propView.IsOff(LabelViewProperties.INDEX_PROPERTIES_VIEW.GRAPH_MINS) == true)
+                                    && (propView.IsOn (LabelViewProperties.INDEX_PROPERTIES_VIEW.GRAPH_HOURS) == true))
                                 { //Отобразить 2 элемента (таблица(час) + график(час))
                                     stctrView.Panel1.Controls.Add(m_dgwHours);
                                     stctrView.Panel2.Controls.Add(m_ZedGraphHours);
                                 }
                                 else
                                 {
-                                    if ((propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_MINS] == 0) && (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_HOURS] == 1) &&
-                                        (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.GRAPH_MINS] == 1) && (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.GRAPH_HOURS] == 0))
+                                    if ((propView.IsOff (LabelViewProperties.INDEX_PROPERTIES_VIEW.TABLE_MINS) == true)
+                                        && (propView.IsOn (LabelViewProperties.INDEX_PROPERTIES_VIEW.TABLE_HOURS) == true)
+                                        && (propView.IsOn (LabelViewProperties.INDEX_PROPERTIES_VIEW.GRAPH_MINS) == true)
+                                        && (propView.IsOff (LabelViewProperties.INDEX_PROPERTIES_VIEW.GRAPH_HOURS) == true))
                                     { //Отобразить 2 элемента (таблица(час) + график(час))
                                         stctrView.Panel1.Controls.Add(m_dgwHours);
                                         stctrView.Panel2.Controls.Add(m_ZedGraphMins);
                                     }
                                     else
                                     {
-                                        if ((propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_MINS] == 1) && (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_HOURS] == 0) &&
-                                            (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.GRAPH_MINS] == 0) && (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.GRAPH_HOURS] == 1))
+                                        if ((propView.IsOn (LabelViewProperties.INDEX_PROPERTIES_VIEW.TABLE_MINS) == true)
+                                            && (propView.IsOff (LabelViewProperties.INDEX_PROPERTIES_VIEW.TABLE_HOURS) == true)
+                                            && (propView.IsOff (LabelViewProperties.INDEX_PROPERTIES_VIEW.GRAPH_MINS) == true)
+                                            && (propView.IsOn (LabelViewProperties.INDEX_PROPERTIES_VIEW.GRAPH_HOURS) == true))
                                         { //Отобразить 2 элемента (таблица(час) + график(час))
                                             stctrView.Panel1.Controls.Add(m_dgwMins);
                                             stctrView.Panel2.Controls.Add(m_ZedGraphHours);
@@ -999,20 +1013,20 @@ namespace Statistic
                     iRow++;
                 }
 
-                switch (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.TABLE_AND_GRAPH])
+                switch (propView.GetValue(LabelViewProperties.INDEX_PROPERTIES_VIEW.TABLE_AND_GRAPH))
                 {
-                    case -1: //Таблица и график с аналогичными интервалами НЕ МОГУТ быть размещены в одном 'SplitContainer'
+                    case LabelViewProperties.VALUE.DISABLED: //Таблица и график с аналогичными интервалами НЕ МОГУТ быть размещены в одном 'SplitContainer'
                         break;
-                    case 0:
+                    case LabelViewProperties.VALUE.OFF:
                         break;
-                    case 1:
+                    case LabelViewProperties.VALUE.ON:
                         break;
                     default:
                         break;
                 }
             }
 
-            if (propView[(int)PanelCustomTecView.HLabelCustomTecView.INDEX_PROPERTIES_VIEW.QUICK_PANEL] == 1)
+            if (propView.GetValue(LabelViewProperties.INDEX_PROPERTIES_VIEW.QUICK_PANEL) == LabelViewProperties.VALUE.ON)
             {
                 this.Controls.Add(_pnlQuickData, 0, iRow);
                 _pnlQuickData.ShowFactValues();

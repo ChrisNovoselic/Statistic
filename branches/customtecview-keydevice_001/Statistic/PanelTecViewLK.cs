@@ -51,16 +51,14 @@ namespace Statistic
         /// </summary>
         protected override void InitializeComponent()
         {
-            int[] arProp = new int[] { 0, 1, 0, 1, 0, 1, -1 }; //отобразить часовые таблицу/гистограмму/панель с оперативными данными
-            
             base.InitializeComponent();
 
             if (!(m_label == null))
                 //Произвести реструктуризацию
-                m_label.PerformRestruct(arProp);
+                m_label.PerformRestruct(new LabelViewProperties (LabelViewProperties.BANK_DEFAULT.HOUR_TABLE_GRAPH_OPER));
             else
                 //Восстановление события
-                OnEventRestruct(arProp);
+                OnEventRestruct(new LabelViewProperties (LabelViewProperties.BANK_DEFAULT.HOUR_TABLE_GRAPH_OPER));
         }
       
         private class TecViewLK : TecView

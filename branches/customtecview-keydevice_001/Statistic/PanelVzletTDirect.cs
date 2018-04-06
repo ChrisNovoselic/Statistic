@@ -1304,9 +1304,18 @@ namespace Statistic
 
             public enum INDEX_CUSTOM_TECVIEW : short { UNKNOWN = -1, SINGLE, MULTI };
             public static INDEX_CUSTOM_TECVIEW IndexCustomTecView = INDEX_CUSTOM_TECVIEW.UNKNOWN;
-            //отобразить часовые таблицу/гистограмму/панель с оперативными данными
-            //отобразить часовые таблицу
-            private static List<int[]> s_SetCustomTecView = new List<int[]> {new int [] { 0, 1, 0, 1, 0, 1, -1 }, new int [] { 0, 1, 0, 0, -1, 1, -1 }};
+
+            private LabelViewProperties.BANK_DEFAULT BankName
+            {
+                get
+                {
+                    return IndexCustomTecView == INDEX_CUSTOM_TECVIEW.SINGLE // отобразить часовые таблицу/гистограмму/панель с оперативными данными
+                        ? LabelViewProperties.BANK_DEFAULT.HOUR_TABLE_GRAPH_OPER
+                            : IndexCustomTecView == INDEX_CUSTOM_TECVIEW.MULTI // отобразить часовые таблицу/панель с оперативными данными
+                                ? LabelViewProperties.BANK_DEFAULT.HOUR_TABLE_OPER
+                                    : LabelViewProperties.BANK_DEFAULT.HOUR_TABLE_OPER;
+                }
+            }
 
             protected override void InitializeComponent()
             {
@@ -1323,9 +1332,9 @@ namespace Statistic
                 this.PerformLayout();
 
                 if (!(m_label == null))
-                    m_label.PerformRestruct(s_SetCustomTecView[(int)IndexCustomTecView]);
+                    m_label.PerformRestruct (new LabelViewProperties(BankName));
                 else
-                    OnEventRestruct(s_SetCustomTecView[(int)IndexCustomTecView]);
+                    OnEventRestruct(new LabelViewProperties (BankName));
             }
 
             #endregion
@@ -1342,7 +1351,8 @@ namespace Statistic
             /// </summary>
             private class HLabelTecVzletTDirect : PanelCustomTecView.HLabelCustomTecView
             {
-                public HLabelTecVzletTDirect(int []arProperties) : base (arProperties)
+                public HLabelTecVzletTDirect(LabelViewProperties.BANK_DEFAULT bankName)
+                    : base (bankName)
                 {
                     // для возможности назначения красного цвета шрифта (см. '_color' базового класса)
                     _state = true;
@@ -1942,7 +1952,7 @@ namespace Statistic
                 int iRes = 0;
 
                 if (IndexCustomTecView == INDEX_CUSTOM_TECVIEW.MULTI)
-                    m_label = new HLabelTecVzletTDirect(s_SetCustomTecView[(int)IndexCustomTecView]);
+                    m_label = new HLabelTecVzletTDirect(BankName);
                 else
                     ;
 
