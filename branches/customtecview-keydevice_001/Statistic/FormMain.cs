@@ -558,13 +558,13 @@ namespace Statistic
                 m_timerAlarmEvent;
 
         //private void timerAlarmEvent (object obj)
-        private void timerAlarmEvent(object obj, EventArgs ev)
+        private void timerAlarmEvent (object obj, EventArgs ev)
         {
             //System.Media.SystemSounds.Question.Play();
             if (m_sndAlarmEvent == null)
-                Console.Beep();
+                Console.Beep ();
             else
-                m_sndAlarmEvent.Play();
+                m_sndAlarmEvent.Play ();
         }
 
         MessageBoxAlarmEvent m_formAlarmEvent;

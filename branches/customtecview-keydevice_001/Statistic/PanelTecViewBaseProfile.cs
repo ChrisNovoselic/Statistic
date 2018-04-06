@@ -48,6 +48,11 @@ namespace Statistic
 
             private List<VALUE> _values;
 
+            /// <summary>
+            /// Значение признака ориентации размещения таблиц, графиков
+            /// </summary>
+            private PanelTecViewBase.LabelViewProperties.VALUE m_prevOrientation;
+
             private static Dictionary<BANK_DEFAULT, List<VALUE>> s_defaultValues = new Dictionary<BANK_DEFAULT, List<VALUE>> () {
                 { BANK_DEFAULT.DISABLED // все отключено
                     , new List<VALUE>() { VALUE.DISABLED // TABLE_MINS
@@ -97,6 +102,13 @@ namespace Statistic
                     _values = new List<VALUE> (s_defaultValues[BANK_DEFAULT.DISABLED]);
                 else
                     _values = new List<VALUE> (values);
+
+                m_prevOrientation = GetValue (PanelTecViewBase.LabelViewProperties.INDEX_PROPERTIES_VIEW.ORIENTATION);
+            }
+
+            public LabelViewProperties ()
+                : this(s_defaultValues [BANK_DEFAULT.HOUR_TABLE_GRAPH_OPER])
+            {
             }
 
             public LabelViewProperties (BANK_DEFAULT nameBank)
@@ -105,9 +117,8 @@ namespace Statistic
             }
 
             public LabelViewProperties (LabelViewProperties dest)
-                : this (BANK_DEFAULT.DISABLED)
+                : this (dest._values)
             {
-
             }
 
             public static string GetText (INDEX_PROPERTIES_VIEW indx)
@@ -125,6 +136,100 @@ namespace Statistic
             public void SetValue (INDEX_PROPERTIES_VIEW indx, VALUE value)
             {
                 _values [(int)indx] = value;
+            }
+
+            /// <summary>
+            /// Установить новое значение для свойства
+            /// </summary>
+            /// <param name="indx">Индекс свойства</param>
+            /// <param name="newVal">Новое значение свойства</param>
+            public void SetProperty (PanelTecViewBase.LabelViewProperties.INDEX_PROPERTIES_VIEW indx, PanelTecViewBase.LabelViewProperties.VALUE newVal)
+            {
+                SetValue (indx, newVal);
+
+                int cnt = 0;
+                PanelTecViewBase.LabelViewProperties.INDEX_PROPERTIES_VIEW i = PanelTecViewBase.LabelViewProperties.INDEX_PROPERTIES_VIEW.UNKNOWN;
+                // сколько таблиц/гистограмм отображается
+                cnt = GetCountOn (0, PanelTecViewBase.LabelViewProperties.INDEX_PROPERTIES_VIEW.GRAPH_HOURS);
+
+                if (cnt > 1) {
+                    if (cnt > 2) {
+                        //if (cnt > 3) {
+                        if (indx < PanelTecViewBase.LabelViewProperties.INDEX_PROPERTIES_VIEW.GRAPH_MINS)
+                            //3-й установленный признак - таблица: снять с отображения графики
+                            SetGraphOff ();
+                        else
+                            //3-й установленный признак - график: снять с отображения таблицы
+                            SetTableOff ();
+
+                        cnt -= 2;
+                        //} else ;
+                    } else
+                        ;
+
+                    if (cnt > 1)
+                        if (IsOrientationDisabled == true)
+                            if (PreviousOrientation == PanelTecViewBase.LabelViewProperties.VALUE.DISABLED)
+                                //Вертикально - по умолчанию
+                                SetValue (PanelTecViewBase.LabelViewProperties.INDEX_PROPERTIES_VIEW.ORIENTATION
+                                    , PanelTecViewBase.LabelViewProperties.VALUE.OFF);
+                            else
+                                OrientationRecovery ();
+                        else
+                            ; //Оставить "как есть"
+                    else
+                        OrientationDisabled ();
+                } else {
+                    OrientationDisabled ();
+                }
+            }
+
+            public void SetTableOff ()
+            {
+                SetValue (INDEX_PROPERTIES_VIEW.TABLE_MINS, PanelTecViewBase.LabelViewProperties.VALUE.OFF); //Снять с отображения
+                SetValue (INDEX_PROPERTIES_VIEW.TABLE_HOURS, PanelTecViewBase.LabelViewProperties.VALUE.OFF); //Снять с отображения
+            }
+
+            public void SetGraphOff ()
+            {
+                SetValue (INDEX_PROPERTIES_VIEW.GRAPH_MINS, PanelTecViewBase.LabelViewProperties.VALUE.OFF); //Снять с отображения
+                SetValue (INDEX_PROPERTIES_VIEW.GRAPH_HOURS, PanelTecViewBase.LabelViewProperties.VALUE.OFF); //Снять с отображения
+            }
+
+            public bool IsOrientationDisabled
+            {
+                get
+                {
+                    return _values [(int)INDEX_PROPERTIES_VIEW.ORIENTATION] == VALUE.DISABLED;
+                }
+            }
+
+            public VALUE PreviousOrientation
+            {
+                get
+                {
+                    return m_prevOrientation;
+                }
+            }
+
+            /// <summary>
+            /// Блокировать возможность выбора "ориентация сплиттера"
+            /// </summary>
+            public void OrientationDisabled ()
+            {
+                //Запомнить предыдущее стостояние "ориентация сплиттера"
+                m_prevOrientation = _values [(int)INDEX_PROPERTIES_VIEW.ORIENTATION];
+                //Блокировать возможность выбора "ориентация сплиттера"
+                _values [(int)INDEX_PROPERTIES_VIEW.ORIENTATION] = VALUE.DISABLED;
+            }
+
+            /// <summary>
+            /// Восстановить значение "ориентация сплиттера"
+            /// </summary>
+            public void OrientationRecovery ()
+            {
+                _values [(int)INDEX_PROPERTIES_VIEW.ORIENTATION] = m_prevOrientation;
+                
             }
 
             public void CopyTo (LabelViewProperties dest)

@@ -51,11 +51,6 @@ namespace Statistic
             }
 
             /// <summary>
-            /// Значение признака ориентации размещения таблиц, графиков
-            /// </summary>
-            private PanelTecViewBase.LabelViewProperties.VALUE m_prevViewOrientation;
-
-            /// <summary>
             /// Конструктор - основной (без параметров)
             /// </summary>
             public HLabelCustomTecView(PanelTecViewBase.LabelViewProperties.BANK_DEFAULT bankName)
@@ -73,8 +68,6 @@ namespace Statistic
                 //m_listIdContextMenuItems = new List<int>();
 
                 m_propView = new PanelTecViewBase.LabelViewProperties (bankName);
-
-                m_prevViewOrientation = m_propView.GetValue(PanelTecViewBase.LabelViewProperties.INDEX_PROPERTIES_VIEW.ORIENTATION);
 
                 ForeColorChanged += new EventHandler (onForeColorChanged);
                 BackColorChanged += new EventHandler (onBackColorChanged);
@@ -105,10 +98,10 @@ namespace Statistic
                     indx = (PanelTecViewBase.LabelViewProperties.INDEX_PROPERTIES_VIEW)((MenuItem)obj).Index;
 
                 if (!(indx == PanelTecViewBase.LabelViewProperties.INDEX_PROPERTIES_VIEW.ORIENTATION))
-                    setProperty(indx, (PanelTecViewBase.LabelViewProperties.VALUE)(((MenuItem)obj).Checked == true ? 0 : 1));
+                    m_propView.SetProperty(indx, (PanelTecViewBase.LabelViewProperties.VALUE)(((MenuItem)obj).Checked == true ? 0 : 1));
                 else
                 // ориентация размещения таблиц/гистограмм
-                    setProperty(indx, (PanelTecViewBase.LabelViewProperties.VALUE)mi.Index);
+                    m_propView.SetProperty(indx, (PanelTecViewBase.LabelViewProperties.VALUE)mi.Index);
 
                 EventRestruct (m_propView);
 
@@ -116,80 +109,11 @@ namespace Statistic
 
                 ((PanelCustomTecView)Parent.Parent).EventContentChanged ();
             }
-
+            
             /// <summary>
-            /// Установить новое значение для свойства
+            /// Создать массив п. меню, управляющего содержанием элемента управления
             /// </summary>
-            /// <param name="indx">Индекс свойства</param>
-            /// <param name="newVal">Новое значение свойства</param>
-            private void setProperty (PanelTecViewBase.LabelViewProperties.INDEX_PROPERTIES_VIEW indx, PanelTecViewBase.LabelViewProperties.VALUE newVal) {
-                m_propView.SetValue(indx, newVal);
-
-                int cnt = 0;
-                PanelTecViewBase.LabelViewProperties.INDEX_PROPERTIES_VIEW i = PanelTecViewBase.LabelViewProperties.INDEX_PROPERTIES_VIEW.UNKNOWN
-                    , indxStart = PanelTecViewBase.LabelViewProperties.INDEX_PROPERTIES_VIEW.UNKNOWN
-                    , indxEnd = PanelTecViewBase.LabelViewProperties.INDEX_PROPERTIES_VIEW.UNKNOWN;
-                // сколько таблиц/гистограмм отображается
-                cnt = m_propView.GetCountOn(0, PanelTecViewBase.LabelViewProperties.INDEX_PROPERTIES_VIEW.GRAPH_HOURS);
-
-                if (cnt > 1) {
-                    if (cnt > 2) {
-                        //if (cnt > 3) {
-                            indxStart = PanelTecViewBase.LabelViewProperties.INDEX_PROPERTIES_VIEW.UNKNOWN;
-                            indxEnd = PanelTecViewBase.LabelViewProperties.INDEX_PROPERTIES_VIEW.UNKNOWN;
-                            if (indx < PanelTecViewBase.LabelViewProperties.INDEX_PROPERTIES_VIEW.GRAPH_MINS)
-                            { //3-й установленный признак - таблица: снять с отображения графики
-                                indxStart = PanelTecViewBase.LabelViewProperties.INDEX_PROPERTIES_VIEW.GRAPH_MINS;
-                                indxEnd = PanelTecViewBase.LabelViewProperties.INDEX_PROPERTIES_VIEW.GRAPH_HOURS;
-                            }
-                            else
-                            { //3-й установленный признак - график: снять с отображения таблицы
-                                indxStart = PanelTecViewBase.LabelViewProperties.INDEX_PROPERTIES_VIEW.TABLE_MINS;
-                                indxEnd = PanelTecViewBase.LabelViewProperties.INDEX_PROPERTIES_VIEW.TABLE_HOURS;
-                            }
-
-                            for (i = indxStart; ! (i > indxEnd); i ++) {
-                                cnt -= (int)m_propView.GetValue(i);
-                                m_propView.SetValue (i, PanelTecViewBase.LabelViewProperties.VALUE.OFF); //Снять с отображения
-                            }
-                        //} else ;
-                    }
-                    else
-                        ;
-
-                    if (cnt > 1)
-                        if (m_propView.GetValue(PanelTecViewBase.LabelViewProperties.INDEX_PROPERTIES_VIEW.ORIENTATION) == PanelTecViewBase.LabelViewProperties.VALUE.DISABLED)
-                            if (m_prevViewOrientation < 0)
-                            //Вертикально - по умолчанию
-                                m_propView.SetValue(PanelTecViewBase.LabelViewProperties.INDEX_PROPERTIES_VIEW.ORIENTATION
-                                    , PanelTecViewBase.LabelViewProperties.VALUE.OFF);
-                            else
-                            //Восстановить значение "ориентация сплиттера"
-                                m_propView.SetValue(PanelTecViewBase.LabelViewProperties.INDEX_PROPERTIES_VIEW.ORIENTATION, m_prevViewOrientation);
-                        else
-                            ; //Оставить "как есть"
-                    else
-                        //Запомнить предыдущее стостояние "ориентация сплиттера"
-                        savePrevViewOrientation ();
-                } else {
-                    //Запомнить предыдущее стостояние "ориентация сплиттера"
-                    savePrevViewOrientation ();
-                }
-            }
-
-            /// <summary>
-            /// Запомнить предыдущее стостояние "ориентация сплиттера"
-            /// </summary>
-            private void savePrevViewOrientation () {
-                m_prevViewOrientation = m_propView.GetValue(PanelTecViewBase.LabelViewProperties.INDEX_PROPERTIES_VIEW.ORIENTATION);
-                //Блокировать возможность выбора "ориентация сплиттера"
-                m_propView.SetValue(PanelTecViewBase.LabelViewProperties.INDEX_PROPERTIES_VIEW.ORIENTATION, PanelTecViewBase.LabelViewProperties.VALUE.DISABLED);
-            }
-
-            /// <summary>
-            /// СОздать массив п. меню, управляющего содержанием элемента управления
-            /// </summary>
-            /// <returns></returns>
+            /// <returns>Массив п.п. контекстного меню</returns>
             private MenuItem[] createContentMenuItems()
             {
                 PanelTecViewBase.LabelViewProperties.INDEX_PROPERTIES_VIEW indx = PanelTecViewBase.LabelViewProperties.INDEX_PROPERTIES_VIEW.UNKNOWN;
@@ -210,7 +134,6 @@ namespace Statistic
                     } else
                         ;
                 }
-                
 
                 return arMenuItems;
             }
@@ -387,35 +310,47 @@ namespace Statistic
             /// <summary>
             /// Изменить содержимое ячейки для объекта отображения 
             /// </summary>
+            /// <param name="profile">Массив изменяемых парметров объекта отображения</param>
+            public void LoadProfile (PanelTecViewBase.LabelCustomTecViewProfile profile)
+            {
+                loadProfile(profile.Key.Id, profile.Properties.ToArray().Select(p => p.ToString()).ToArray());
+            }
+
+            /// <summary>
+            /// Изменить содержимое ячейки для объекта отображения 
+            /// </summary>
             /// <param name="arProp">Массив изменяемых парметров объекта отображения</param>
             public void LoadProfile(string []arProp)
+            {
+                loadProfile (Int32.Parse (arProp [1]), arProp [2].Split (CHAR_DELIM_ARRAYITEM));
+            }
+
+            private void loadProfile (int id, string[] arPropVal)
             {
                 MenuItem mItem;
                 int indxItem = -1;
 
                 //Очистить
-                ContextMenu.MenuItems[ContextMenu.MenuItems.Count - 1].PerformClick();
+                ContextMenu.MenuItems [ContextMenu.MenuItems.Count - 1].PerformClick ();
                 //Установить параметры содержания отображения
-                string[] arPropVal = arProp[2].Split(CHAR_DELIM_ARRAYITEM);
                 if (arPropVal.Length == m_propView.Length)
-                    for (int i = 0; i < m_propView.Length; i ++)
-                        m_propView.SetValue((PanelTecViewBase.LabelViewProperties.INDEX_PROPERTIES_VIEW)i
+                    for (int i = 0; i < m_propView.Length; i++)
+                        m_propView.SetValue ((PanelTecViewBase.LabelViewProperties.INDEX_PROPERTIES_VIEW)i
                             , (PanelTecViewBase.LabelViewProperties.VALUE)Int32.Parse (arPropVal [i]));
                 else
                     ; //Ошибка ...
 
                 //Назначить объект
                 //int indx = m_listIdContextMenuItems.IndexOf(Int32.Parse(arProp[1]))
-                mItem = ContextMenu.MenuItems.Cast<MenuItem>().First(mi => ((FormChangeMode.KeyDevice)mi.Tag).Id == Int32.Parse (arProp [1]));
+                mItem = ContextMenu.MenuItems.Cast<MenuItem> ().First (mi => ((FormChangeMode.KeyDevice)mi.Tag).Id == id);
                 indxItem = ContextMenu.MenuItems.IndexOf (mItem);
                 if ((!(indxItem < 0))
                     && (indxItem < ContextMenu.MenuItems.Count - COUNT_FIXED_CONTEXT_MENUITEM)) {
                     // инициировать операции по выбору п. меню
-                    mItem.PerformClick();
+                    mItem.PerformClick ();
                     // изменить состояние п. меню
-                    ContentMenuStateChange();
-                }
-                else
+                    ContentMenuStateChange ();
+                } else
                     ; //??? Ошибка: не найден
             }
 
@@ -437,10 +372,10 @@ namespace Statistic
                             objRes += key_device.Id.ToString ();
                             objRes = $"{objRes}{CHAR_DELIM_PROP}";
                             //Параметры объекта...
-                            string.Join ($"{CHAR_DELIM_ARRAYITEM}", m_propView.ToArray ().Select (prop => prop.ToString ()).ToArray());
+                            objRes = $"{objRes}{string.Join ($"{CHAR_DELIM_ARRAYITEM}", m_propView.ToArray ().Select (prop => prop.ToString ()).ToArray())}";
                             break;
                         case MODE_PROFILE.OBJECT:
-                            //Идентификатор объекта... и gараметры объекта...
+                            //Идентификатор объекта... и параметры объекта...
                             objRes = new PanelTecViewBase.LabelCustomTecViewProfile (key_device, m_propView);
                             break;
                         default:
@@ -851,43 +786,101 @@ namespace Statistic
         /// <param name="profile">Строка с настройками всех панелей</param>
         public void LoadProfile(string profile)
         {
-            string[] arLabel = profile.Split(CHAR_DELIM_LABEL);
-            foreach (string label in arLabel)
-            {
-                string[] arProp = label.Split(CHAR_DELIM_PROP);
+            MODE_PROFILE modeAutoDetected = MODE_PROFILE.UNKNOWN;
 
-                if (arProp.Length == 0)
-                    ; //Ошибка...
-                else
-                    if (arProp.Length == 1)
-                        ; //"Пустая"...
-                    else
-                        if (arProp.Length > 1)
-                            if (! (arProp.Length == 3))
-                                ; //Ошибка...
+            string [] arLabel = null;
+
+            XmlSerializer ser;
+            object deser;
+            List<LabelProfile> listLabelProfiles = null;
+
+            // определить режим с помощью клторого выполнено сохранение профиля
+            foreach (MODE_PROFILE mode in Enum.GetValues (typeof (MODE_PROFILE))) {
+                try {
+                    switch (mode) {
+                        case MODE_PROFILE.OBJECT:
+                            ser = new XmlSerializer (typeof (List<LabelProfile>));
+                            using (StringReader buffer = new StringReader (profile)) {
+                                deser = ser.Deserialize (buffer);
+                                listLabelProfiles = (List<LabelProfile>)deser;
+                            }
+
+                            modeAutoDetected = mode;
+                            break;
+                        case MODE_PROFILE.STRING:
+                            arLabel = profile.Split (new char [] { CHAR_DELIM_LABEL }, StringSplitOptions.RemoveEmptyEntries);
+
+                            if (arLabel.Length > 0)
+                                modeAutoDetected = mode;
                             else
-                                m_arLabelEmpty[Int32.Parse(arProp [0])].LoadProfile (arProp);
+                                ;
+                            break;
+                        default:
+                            break;
+                    }
+                } catch (Exception e) {
+                    ASUTP.Logging.Logg ().Exception (e, $"PanelCustomTecView::LoadProfile () - ошибка при распознавании строки Mode={mode}...", ASUTP.Logging.INDEX_MESSAGE.NOT_SET);
+                }
+
+                if (!(modeAutoDetected == MODE_PROFILE.UNKNOWN))
+                    break;
+                else
+                    ;
+            }
+
+            // применить определуннвй режим для распознавания значений профиля
+            switch (modeAutoDetected) {
+                case MODE_PROFILE.OBJECT:
+                    if (Equals(listLabelProfiles, null) == false)
+                        foreach (LabelProfile label in listLabelProfiles) {
+                            if (Equals (label.Value, null) == false)
+                                m_arLabelEmpty [label.Coordinate].LoadProfile (label.Value);
+                            else
+                                ;
+                        }
+                    else
+                        ;
+                    break;
+                case MODE_PROFILE.STRING:
+                    foreach (string label in arLabel) {
+                        string [] arProp = label.Split (CHAR_DELIM_PROP);
+
+                        if (arProp.Length == 0)
+                            ; //Ошибка...
+                        else
+                            if (arProp.Length == 1)
+                                ; //"Пустая"...
+                            else
+                                if (arProp.Length > 1)
+                                if (!(arProp.Length == 3))
+                                    ; //Ошибка...
+                                else
+                                    m_arLabelEmpty [Int32.Parse (arProp [0])].LoadProfile (arProp);
+                    }
+                    break;
+                default:
+                    break;
             }
         }
 
         private enum MODE_PROFILE
         {
-            STRING, OBJECT
+            UNKNOWN = -1, OBJECT, STRING
         }
 
-        private static MODE_PROFILE _modeProfile = MODE_PROFILE.STRING;
+        private static MODE_PROFILE _modeProfile = MODE_PROFILE.OBJECT;
 
         [Serializable]
-        private struct LabelProfile {
+        public struct LabelProfile {
             public int Coordinate;
 
             public PanelTecViewBase.LabelCustomTecViewProfile Value;
         }
 
-        [Serializable]
-        private class ListLabelProfiles : List<LabelProfile>
-        {
-        }
+        //[Serializable]
+        //public class ListLabelProfiles : List<LabelProfile>
+        //{
+        //}
 
         /// <summary>
         /// Возвратить строку с настройками всех панелей (отображаемые объекты, состав отображаемой информации)
